@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Fat Loss"/>
+<meta name="theme-color" content="#0A0A0F"/>
+<title>Fat Loss Protocol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:#0A0A0F;color:#F0EDE8;font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent;}
+::-webkit-scrollbar{display:none;}
+#app{max-width:480px;margin:0 auto;min-height:100vh;padding-bottom:90px;}
+
+/* tabs */
+.tabs{display:flex;border-bottom:1px solid #1A1A24;margin:20px 20px 0;}
+.tab{flex:1;padding:10px 4px;background:none;border:none;color:#666;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;transition:color .2s,border-color .2s;letter-spacing:.02em;}
+.tab.on{color:#F0EDE8;border-color:#F0EDE8;}
+
+/* views */
+.view{display:none;padding:0 20px;}
+.view.on{display:block;}
+
+/* section header */
+.sec{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#555;margin-bottom:10px;margin-top:24px;}
+
+/* habit rows */
+.habit-row{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px;cursor:pointer;border:1.5px solid transparent;margin-bottom:8px;background:#14141C;user-select:none;-webkit-user-select:none;transition:transform .1s;}
+.habit-row:active{transform:scale(.98);}
+.habit-row.on{border-color:rgba(255,255,255,.06);}
+.chk{width:26px;height:26px;border-radius:50%;border:2px solid #333;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;transition:all .2s;}
+.habit-label{font-size:14px;font-weight:500;color:#999;}
+.habit-sub{font-size:12px;color:#555;margin-top:2px;}
+.habit-row.on .habit-label{color:#F0EDE8;}
+
+/* card */
+.card{background:#14141C;border:1px solid #1E1E2E;border-radius:12px;padding:16px;}
+
+/* inputs */
+.numinput{background:#1A1A24;border:1px solid #2A2A3A;border-radius:8px;color:#F0EDE8;font-family:'DM Mono',monospace;font-size:14px;padding:8px 12px;outline:none;width:72px;text-align:center;}
+.numinput:focus{border-color:#4A4A6A;}
+.numinput::placeholder{color:#444;}
+.btn{background:#F0EDE8;color:#0A0A0F;border:none;border-radius:8px;padding:8px 16px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:13px;cursor:pointer;}
+.btn:active{opacity:.8;}
+.btn-sm{background:#1E1E2E;color:#888;border:none;border-radius:8px;padding:6px 10px;font-family:'DM Mono',monospace;font-size:12px;cursor:pointer;transition:background .15s,color .15s;}
+.btn-sm.on{background:#8B5CF6;color:#fff;}
+
+/* bar */
+.bar-bg{width:100%;height:8px;background:#1E1E2E;border-radius:99px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:99px;transition:width .5s ease;}
+
+/* week strip */
+.week-strip{display:flex;gap:4px;justify-content:space-between;margin-top:20px;}
+.day-col{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.day-label{font-size:10px;color:#444;font-weight:500;}
+.day-dot{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;cursor:pointer;border:1px solid transparent;}
+.dot-pip{width:4px;height:4px;border-radius:50%;}
+
+/* stat pills */
+.stat-row{display:flex;gap:10px;margin-bottom:16px;}
+.stat{background:#14141C;border:1px solid #222;border-radius:16px;padding:14px;flex:1;}
+.stat-label{font-size:11px;color:#555;margin-bottom:4px;}
+.stat-val{font-size:24px;font-weight:300;font-family:'DM Mono',monospace;}
+.stat-sub{font-size:11px;color:#555;margin-top:2px;}
+
+/* bottom bar */
+#bottom-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#0A0A0F;border-top:1px solid #141420;padding:12px 20px 24px;display:flex;justify-content:space-between;align-items:center;}
+.bft-pill{font-size:11px;color:#555;background:#14141C;padding:4px 10px;border-radius:99px;border:1px solid #222;}
+
+/* day card in week view */
+.day-card{display:flex;align-items:center;gap:12px;padding:12px 14px;background:#14141C;border-radius:10px;margin-bottom:8px;cursor:pointer;}
+.day-badge{width:36px;height:36px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;font-weight:600;line-height:1.2;}
+
+/* textarea */
+textarea{width:100%;min-height:80px;background:#14141C;border:1px solid #1E1E2E;border-radius:12px;color:#F0EDE8;font-family:'DM Sans',sans-serif;font-size:13px;padding:14px;resize:vertical;outline:none;line-height:1.6;}
+
+/* bf bar */
+.bf-bar-wrap{width:100%;height:12px;background:#1E1E2E;border-radius:99px;position:relative;margin:8px 0;}
+.bf-marker{position:absolute;top:50%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;border:2px solid #0A0A0F;transition:left .5s;}
+
+/* progress table */
+.prog-row{display:flex;justify-content:space-between;padding:8px 0;font-size:13px;}
+.prog-row+.prog-row{border-top:1px solid #1A1A24;}
+
+/* quick sleep btns */
+.sleep-quick{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
+
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.4)}100%{transform:scale(1)}}
+.pop{animation:pop .3s ease;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <div id="header" style="padding:28px 20px 0"></div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab on" onclick="setView('today')">Today</button>
+    <button class="tab" onclick="setView('week')">This Week</button>
+    <button class="tab" onclick="setView('progress')">Progress</button>
+  </div>
+
+  <!-- TODAY VIEW -->
+  <div class="view on" id="view-today">
+    <div class="week-strip" id="week-strip"></div>
+    <div id="habits-list"></div>
+
+    <!-- Sleep -->
+    <div class="sec" style="color:#8B5CF699">Sleep Last Night</div>
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:13px;color:#888;margin-bottom:4px">Hours slept</div>
+          <div id="sleep-display" style="font-size:13px;color:#444">Not logged yet</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="numinput" id="sleep-input" type="number" placeholder="7.5" step="0.5" min="1" max="12"/>
+          <button class="btn" onclick="logSleep()">Log</button>
+        </div>
+      </div>
+      <div class="sleep-quick" id="sleep-quick"></div>
+    </div>
+
+    <!-- Zone 2 -->
+    <div class="sec" style="color:#3B82F688">Zone 2 Minutes</div>
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div>
+          <div style="font-size:13px;color:#888">Logged today</div>
+          <div><span id="z2-today" style="font-size:28px;font-weight:300;font-family:'DM Mono',monospace;color:#3B82F6">0</span><span style="font-size:14px;color:#555">min</span></div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="numinput" id="z2-input" type="number" placeholder="min" min="1" max="180"/>
+          <button class="btn" onclick="addZ2()">Add</button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:#555;margin-bottom:6px">
+        Weekly: <span id="z2-week-num" style="color:#3B82F6;font-family:'DM Mono',monospace">0</span> / 175 min
+      </div>
+      <div class="bar-bg"><div id="z2-bar" class="bar-fill" style="background:linear-gradient(90deg,#3B82F6,#06B6D4);width:0%"></div></div>
+    </div>
+
+    <!-- Notes -->
+    <div class="sec">Notes</div>
+    <textarea id="notes-input" placeholder="How did you feel? Any observations..."></textarea>
+  </div>
+
+  <!-- WEEK VIEW -->
+  <div class="view" id="view-week">
+    <div class="sec" style="margin-top:24px">Weekly Targets</div>
+    <div class="stat-row">
+      <div class="stat">
+        <div class="stat-label">BFT Sessions</div>
+        <div class="stat-val" id="w-bft">0<span style="font-size:14px;color:#555">/3</span></div>
+        <div class="stat-sub">Target 3–4×</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Zone 2 Mins</div>
+        <div class="stat-val" id="w-z2">0<span style="font-size:14px;color:#555">m</span></div>
+        <div class="stat-sub">Target 150–200 min</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Avg Sleep</div>
+        <div class="stat-val" id="w-sleep">—<span style="font-size:14px;color:#555">h</span></div>
+        <div class="stat-sub">Target 7.5–8h</div>
+      </div>
+    </div>
+    <div class="bar-bg" style="margin-bottom:24px"><div id="w-z2-bar" class="bar-fill" style="background:linear-gradient(90deg,#3B82F6,#06B6D4);width:0%"></div></div>
+    <div class="sec">Daily Breakdown</div>
+    <div id="week-breakdown"></div>
+  </div>
+
+  <!-- PROGRESS VIEW -->
+  <div class="view" id="view-progress">
+    <div class="sec" style="margin-top:24px">Log Body Composition</div>
+    <div class="card" style="margin-bottom:20px">
+      <div id="log-date-label" style="font-size:12px;color:#666;margin-bottom:12px"></div>
+      <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+        <div><div style="font-size:11px;color:#555;margin-bottom:4px">Weight (kg)</div>
+          <input class="numinput" id="wt-input" type="number" placeholder="72.5" step="0.1"/></div>
+        <div><div style="font-size:11px;color:#555;margin-bottom:4px">Body Fat %</div>
+          <input class="numinput" id="bf-input" type="number" placeholder="26.0" step="0.1"/></div>
+        <button class="btn" onclick="saveBodyComp()">Save</button>
+      </div>
+    </div>
+    <div id="bf-progress-section"></div>
+    <div class="sec">Export Data for Analysis</div>
+    <div class="card">
+      <div style="font-size:13px;color:#888;margin-bottom:12px;line-height:1.6">Download all your data to share with Claude for correlation analysis — sleep vs weight, habit streaks, and more.</div>
+      <button class="btn" onclick="exportData()">Download Data (JSON)</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM BAR -->
+<div id="bottom-bar">
+  <div id="bottom-left" style="font-size:11px;color:#444"></div>
+  <div id="bottom-right" class="bft-pill"></div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const HABITS = [
+  { id:"sunlight",       label:"Morning sunlight",    sub:"5–10 mins within 30min of waking",   icon:"☀️", group:"Morning Protocol",    color:"#F59E0B" },
+  { id:"caffeine_delay", label:"Caffeine delay",       sub:"Wait 90–120 min after waking",        icon:"☕", group:"Morning Protocol",    color:"#F59E0B" },
+  { id:"cold_exposure",  label:"Cold shower finish",   sub:"1–3 mins cold at end of shower",      icon:"🧊", group:"Morning Protocol",    color:"#F59E0B" },
+  { id:"fasted_workout", label:"Trained fasted",       sub:"Water/electrolytes only before BFT",  icon:"💧", group:"Morning Protocol",    color:"#F59E0B" },
+  { id:"bft_strength",   label:"BFT Strength/Build",   sub:"Resistance session (~50 min)",        icon:"🏋️", group:"Exercise",            color:"#EF4444" },
+  { id:"zone2_done",     label:"Zone 2 cardio",        sub:"Treadmill incline or steady swim",    icon:"🚶", group:"Exercise",            color:"#EF4444" },
+  { id:"rest_day",       label:"Rest / active recovery",sub:"Light walking counts",               icon:"😴", group:"Exercise",            color:"#EF4444" },
+  { id:"post_workout_gap",label:"Post-workout gap",    sub:"Waited 60–90 min before first meal",  icon:"⏱️", group:"Nutrition & Timing",  color:"#10B981" },
+  { id:"eating_order",   label:"Correct eating order", sub:"Veg → Protein/Fat → Carbs",           icon:"🥗", group:"Nutrition & Timing",  color:"#10B981" },
+  { id:"protein_target", label:"Protein target hit",   sub:"30–40g per meal",                     icon:"🍗", group:"Nutrition & Timing",  color:"#10B981" },
+  { id:"evening_cutoff", label:"Early dinner",         sub:"Last meal 2–3h before sleep",         icon:"🌙", group:"Nutrition & Timing",  color:"#10B981" },
+  { id:"post_meal_walk", label:"Post-lunch walk",      sub:"10 min walk after lunch",             icon:"🚶", group:"Daily Maintenance",   color:"#8B5CF6" },
+];
+const TOTAL = HABITS.length;
+const DAY_NAMES = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const ZONE2_TARGET = 175;
+
+function dateKey(d){ d=d||new Date(); return d.toISOString().slice(0,10); }
+function loadJ(k,fb){ try{ return JSON.parse(localStorage.getItem(k)||"null")??fb; }catch{ return fb; } }
+function saveJ(k,v){ localStorage.setItem(k,JSON.stringify(v)); }
+
+let data   = loadJ("flt_data2",{});
+let wlog   = loadJ("flt_wlog2",[]);
+let selDate= dateKey();
+let curView= "today";
+
+function saveData(){ saveJ("flt_data2",data); }
+function saveWlog(){ saveJ("flt_wlog2",wlog); }
+
+function getDay(k){ return data[k]||(data[k]={}); }
+function getHabits(k){ let d=getDay(k); if(!d.habits) d.habits={}; return d.habits; }
+
+// ── WEEK UTILS ────────────────────────────────────────────────────────────────
+function weekDates(){
+  const t=new Date(), day=t.getDay();
+  const mon=new Date(t);
+  mon.setDate(t.getDate()-((day+6)%7));
+  return Array.from({length:7},(_,i)=>{ const d=new Date(mon); d.setDate(mon.getDate()+i); return d; });
+}
+function weekKeys(){ return weekDates().map(d=>dateKey(d)); }
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function render(){
+  renderHeader();
+  renderWeekStrip();
+  renderHabits();
+  renderSleep();
+  renderZ2Today();
+  renderNotes();
+  renderWeekView();
+  renderProgress();
+  renderBottomBar();
+}
+
+function fmtDate(k){
+  return new Date(k+"T12:00:00").toLocaleDateString("en-SG",{weekday:"long",day:"numeric",month:"short"});
+}
+function fmtDateShort(k){
+  return new Date(k+"T12:00:00").toLocaleDateString("en-SG",{weekday:"short",day:"numeric",month:"short"});
+}
+
+function doneCount(k){
+  return Object.values(getHabits(k)).filter(Boolean).length;
+}
+function pct(k){ return Math.round((doneCount(k)/TOTAL)*100); }
+
+// ── HEADER ───────────────────────────────────────────────────────────────────
+function renderHeader(){
+  const p=pct(selDate);
+  const bfEntries=wlog.filter(e=>e.bf!=null).sort((a,b)=>a.date.localeCompare(b.date));
+  const latestBF=bfEntries.at(-1)?.bf;
+  const startBF=bfEntries[0]?.bf||26;
+
+  let bfBar="";
+  if(latestBF){
+    const pctMarker=Math.max(2,Math.min(98,((26-latestBF)/(26-20))*100));
+    const tgtPct=((26-23)/(26-20))*100;
+    const col=latestBF<=23?"#10B981":"#F59E0B";
+    bfBar=`
+    <div class="card" style="margin-top:18px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:12px;color:#888">Body Fat Progress</span>
+        <span style="font-size:12px;font-family:'DM Mono',monospace">${latestBF}% <span style="color:#555">→ 23%</span></span>
+      </div>
+      <div class="bf-bar-wrap">
+        <div class="bf-marker" style="left:${pctMarker}%;background:${col}"></div>
+        <div class="bf-marker" style="left:${tgtPct}%;background:#10B981;opacity:.4"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:#444;margin-top:4px">
+        <span>Start ${startBF}%</span><span style="color:#10B981">Target 23%</span><span>20%</span>
+      </div>
+    </div>`;
+  }
+
+  document.getElementById("header").innerHTML=`
+    <div style="display:flex;align-items:flex-start;justify-content:space-between">
+      <div>
+        <div style="font-size:11px;letter-spacing:.14em;color:#555;font-weight:600;text-transform:uppercase;margin-bottom:4px">Fat Loss Protocol</div>
+        <div style="font-size:24px;font-weight:300;letter-spacing:-.02em;line-height:1">${fmtDate(selDate)}</div>
+      </div>
+      <div style="background:#14141C;border:1px solid #222;border-radius:12px;padding:8px 14px;text-align:center">
+        <div style="font-size:22px;font-weight:600;font-family:'DM Mono',monospace;color:${p===100?"#10B981":"#F0EDE8"}">${p}%</div>
+        <div style="font-size:10px;color:#555;letter-spacing:.06em;margin-top:2px">TODAY</div>
+      </div>
+    </div>
+    ${bfBar}`;
+}
+
+// ── WEEK STRIP ────────────────────────────────────────────────────────────────
+function renderWeekStrip(){
+  const wd=weekDates(), today=dateKey();
+  let html="";
+  wd.forEach((d,i)=>{
+    const k=dateKey(d), isSel=k===selDate, isT=k===today;
+    const done=doneCount(k), hasDat=done>0||getDay(k).sleepHrs;
+    const bg=isSel?"#F0EDE8":hasDat?"#1E1E2E":"transparent";
+    const col=isSel?"#0A0A0F":isT?"#F0EDE8":"#666";
+    const bdr=isT&&!isSel?"1px solid #444":"1px solid transparent";
+    const pipCol=hasDat?(done>=TOTAL*.8?"#10B981":"#F59E0B"):"transparent";
+    html+=`<div class="day-col">
+      <div class="day-label">${DAY_NAMES[i]}</div>
+      <div class="day-dot" style="background:${bg};color:${col};border:${bdr}" onclick="selectDate('${k}')">${d.getDate()}</div>
+      <div class="dot-pip" style="background:${pipCol}"></div>
+    </div>`;
+  });
+  document.getElementById("week-strip").innerHTML=html;
+}
+
+// ── HABITS ───────────────────────────────────────────────────────────────────
+function renderHabits(){
+  const habits=getHabits(selDate);
+  let groups={};
+  HABITS.forEach(h=>{ if(!groups[h.group]) groups[h.group]=[]; groups[h.group].push(h); });
+  let html="";
+  Object.entries(groups).forEach(([grp,items])=>{
+    const col=items[0].color;
+    html+=`<div class="sec" style="color:${col}99">${grp}</div>`;
+    items.forEach(h=>{
+      const on=!!habits[h.id];
+      const chkStyle=on?`background:${h.color};color:#fff;border-color:transparent`:"";
+      const rowStyle=on?`border-color:${h.color}22;background:${h.color}08`:""
+      html+=`<div class="habit-row ${on?"on":""}" style="${rowStyle}" onclick="toggleHabit('${h.id}',this)" data-id="${h.id}">
+        <div class="chk" style="${chkStyle}" id="chk-${h.id}">${on?"✓":""}</div>
+        <div>
+          <div class="habit-label">${h.icon} ${h.label}</div>
+          <div class="habit-sub">${h.sub}</div>
+        </div>
+      </div>`;
+    });
+  });
+  document.getElementById("habits-list").innerHTML=html;
+}
+
+function toggleHabit(id, row){
+  const habits=getHabits(selDate);
+  habits[id]=!habits[id];
+  saveData();
+  // update row
+  const h=HABITS.find(x=>x.id===id), on=habits[id];
+  const chk=document.getElementById("chk-"+id);
+  chk.style.cssText=on?`background:${h.color};color:#fff;border-color:transparent`:"";
+  chk.textContent=on?"✓":"";
+  chk.classList.add("pop"); setTimeout(()=>chk.classList.remove("pop"),350);
+  row.className="habit-row "+(on?"on":"");
+  row.style.cssText=on?`border-color:${h.color}22;background:${h.color}08`:"";
+  renderHeader();
+  renderBottomBar();
+  renderWeekStrip();
+}
+
+// ── SLEEP ─────────────────────────────────────────────────────────────────────
+function renderSleep(){
+  const sl=getDay(selDate).sleepHrs;
+  const col=!sl?"#444":sl>=7.5?"#10B981":sl>=6?"#F59E0B":"#EF4444";
+  const label=!sl?"Not logged yet":sl>=7.5?"✓ Good":sl>=6?"⚠ Short":"⚠ Low";
+  document.getElementById("sleep-display").innerHTML=sl
+    ?`<span style="font-size:30px;font-weight:300;font-family:'DM Mono',monospace;color:${col}">${sl}</span><span style="font-size:14px;color:#555"> hrs</span> <span style="font-size:12px;color:${col};margin-left:6px">${label}</span>`
+    :`<span style="color:#444">Not logged yet</span>`;
+  const quick=[6,6.5,7,7.5,8,8.5];
+  document.getElementById("sleep-quick").innerHTML=quick.map(h=>
+    `<button class="btn-sm ${sl===h?"on":""}" onclick="quickSleep(${h})">${h}h</button>`
+  ).join("");
+}
+
+function logSleep(){
+  const h=parseFloat(document.getElementById("sleep-input").value);
+  if(isNaN(h)||h<=0||h>24) return;
+  getDay(selDate).sleepHrs=h;
+  saveData();
+  document.getElementById("sleep-input").value="";
+  renderSleep(); renderWeekView(); renderBottomBar();
+}
+
+function quickSleep(h){
+  getDay(selDate).sleepHrs=h;
+  saveData();
+  renderSleep(); renderWeekView(); renderBottomBar();
+}
+
+// ── ZONE 2 ───────────────────────────────────────────────────────────────────
+function renderZ2Today(){
+  const d=getDay(selDate), z2=d.zone2Min||0;
+  document.getElementById("z2-today").textContent=z2;
+  const wk=weekKeys().reduce((s,k)=>s+(getDay(k).zone2Min||0),0);
+  document.getElementById("z2-week-num").textContent=wk;
+  document.getElementById("z2-bar").style.width=Math.min(100,(wk/ZONE2_TARGET)*100)+"%";
+}
+
+function addZ2(){
+  const m=parseInt(document.getElementById("z2-input").value);
+  if(!m||m<=0) return;
+  const d=getDay(selDate);
+  d.zone2Min=(d.zone2Min||0)+m;
+  saveData();
+  document.getElementById("z2-input").value="";
+  renderZ2Today(); renderWeekView();
+}
+
+// ── NOTES ─────────────────────────────────────────────────────────────────────
+function renderNotes(){
+  document.getElementById("notes-input").value=getDay(selDate).notes||"";
+}
+document.getElementById("notes-input").addEventListener("input",function(){
+  getDay(selDate).notes=this.value; saveData();
+});
+
+// ── WEEK VIEW ─────────────────────────────────────────────────────────────────
+function renderWeekView(){
+  const wk=weekKeys(), today=dateKey();
+  const bft=wk.filter(k=>getHabits(k).bft_strength).length;
+  const z2=wk.reduce((s,k)=>s+(getDay(k).zone2Min||0),0);
+  const sleepArr=wk.map(k=>getDay(k).sleepHrs).filter(Boolean);
+  const avgSleep=sleepArr.length?(sleepArr.reduce((a,b)=>a+b,0)/sleepArr.length).toFixed(1):null;
+
+  const bftCol=bft>=3?"#10B981":"#F59E0B";
+  const z2Col=z2>=ZONE2_TARGET?"#10B981":"#3B82F6";
+  const slCol=!avgSleep?"#555":avgSleep>=7.5?"#10B981":avgSleep>=6?"#F59E0B":"#EF4444";
+
+  document.getElementById("w-bft").innerHTML=`<span style="color:${bftCol}">${bft}</span><span style="font-size:14px;color:#555">/3</span>`;
+  document.getElementById("w-z2").innerHTML=`<span style="color:${z2Col}">${z2}</span><span style="font-size:14px;color:#555">m</span>`;
+  document.getElementById("w-sleep").innerHTML=`<span style="color:${slCol}">${avgSleep||"—"}</span><span style="font-size:14px;color:#555">h</span>`;
+  document.getElementById("w-z2-bar").style.width=Math.min(100,(z2/ZONE2_TARGET)*100)+"%";
+
+  let html="";
+  weekDates().forEach((d,i)=>{
+    const k=dateKey(d), dayDd=getDay(k);
+    const done=doneCount(k), p2=pct(k), z2d=dayDd.zone2Min||0, sl=dayDd.sleepHrs;
+    const fut=k>today;
+    const prog=p2>=80?"#10B981":p2>=50?"#F59E0B":"#EF4444";
+    const bgBadge=k===today?"#F0EDE8":"#1E1E2E";
+    const colBadge=k===today?"#0A0A0F":"#888";
+    html+=`<div class="day-card" style="opacity:${fut?.4:1}" onclick="selectDate('${k}');setView('today')">
+      <div class="day-badge" style="background:${bgBadge};color:${colBadge}">
+        <div>${DAY_NAMES[i]}</div><div style="font-size:13px">${d.getDate()}</div>
+      </div>
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:12px;color:#888">
+          <span>${done}/${TOTAL} habits</span>
+          <span style="font-family:'DM Mono',monospace">
+            ${sl?`<span style="color:${sl>=7.5?"#10B981":sl>=6?"#F59E0B":"#EF4444"};margin-right:6px">💤${sl}h</span>`:""}
+            ${z2d>0?`<span style="color:#3B82F6">${z2d}m</span>`:""}
+          </span>
+        </div>
+        <div class="bar-bg"><div class="bar-fill" style="width:${p2}%;background:${prog}"></div></div>
+      </div>
+      <div style="font-size:13px;color:${p2>=80?"#10B981":"#555"};font-family:'DM Mono',monospace">${fut?"—":p2+"%"}</div>
+    </div>`;
+  });
+  document.getElementById("week-breakdown").innerHTML=html;
+}
+
+// ── PROGRESS VIEW ─────────────────────────────────────────────────────────────
+function renderProgress(){
+  document.getElementById("log-date-label").textContent=fmtDateShort(selDate);
+  const bfEntries=wlog.filter(e=>e.bf!=null).sort((a,b)=>a.date.localeCompare(b.date));
+  const latestBF=bfEntries.at(-1)?.bf;
+  const startBF=bfEntries[0]?.bf||26;
+
+  let html="";
+  if(bfEntries.length>0){
+    // sparkline
+    if(bfEntries.length>1){
+      const mn=Math.min(...bfEntries.map(e=>e.bf))-.5;
+      const mx=Math.max(...bfEntries.map(e=>e.bf))+.5;
+      const W=440,H=80;
+      const pts=bfEntries.map((e,i)=>({
+        x:(i/(bfEntries.length-1))*W,
+        y:H-((e.bf-mn)/(mx-mn))*H
+      }));
+      const path=pts.map((p,i)=>`${i===0?"M":"L"} ${p.x} ${p.y}`).join(" ");
+      const tgtY=H-((23-mn)/(mx-mn))*H;
+      const areaPath=path+` L ${W} ${H} L 0 ${H} Z`;
+      html+=`<div class="sec">Body Fat Trend</div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:0">
+        <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:80px;display:block">
+          <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#F59E0B" stop-opacity=".3"/>
+            <stop offset="100%" stop-color="#F59E0B" stop-opacity="0"/>
+          </linearGradient></defs>
+          <path d="${areaPath}" fill="url(#g)"/>
+          <path d="${path}" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          ${tgtY>0&&tgtY<H?`<line x1="0" y1="${tgtY}" x2="${W}" y2="${tgtY}" stroke="#10B981" stroke-width="1" stroke-dasharray="4 4" opacity=".5"/>`:""}
+        </svg>
+        <div style="padding:0 16px 12px">
+          ${[...wlog].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8).map((e,i)=>`
+          <div class="prog-row">
+            <span style="color:#666">${new Date(e.date+"T12:00:00").toLocaleDateString("en-SG",{day:"numeric",month:"short"})}</span>
+            <span style="font-family:'DM Mono',monospace">
+              ${e.weight?`<span style="color:#888;margin-right:12px">${e.weight}kg</span>`:""}
+              ${e.bf?`<span style="color:${e.bf<=23?"#10B981":"#F59E0B"}">${e.bf}%</span>`:""}
+            </span>
+          </div>`).join("")}
+        </div>
+      </div>`;
+    }
+
+    if(latestBF){
+      const chg=startBF-latestBF;
+      html+=`<div class="card" style="display:flex;justify-content:space-between;margin-top:12px">
+        <div><div style="font-size:11px;color:#555">Started</div>
+          <div style="font-size:22px;font-family:'DM Mono',monospace;color:#888">${startBF}%</div></div>
+        <div style="text-align:center"><div style="font-size:11px;color:#555">Change</div>
+          <div style="font-size:22px;font-family:'DM Mono',monospace;color:${chg>0?"#10B981":"#EF4444"}">${chg>0?"−":"+"}${Math.abs(chg).toFixed(1)}%</div></div>
+        <div style="text-align:right"><div style="font-size:11px;color:#555">Current</div>
+          <div style="font-size:22px;font-family:'DM Mono',monospace;color:${latestBF<=23?"#10B981":"#F59E0B"}">${latestBF}%</div></div>
+      </div>`;
+    }
+  } else {
+    html=`<div style="color:#444;font-size:13px;text-align:center;padding:30px 0">Log your first measurement above.</div>`;
+  }
+  document.getElementById("bf-progress-section").innerHTML=html;
+}
+
+function saveBodyComp(){
+  const wt=parseFloat(document.getElementById("wt-input").value)||null;
+  const bf=parseFloat(document.getElementById("bf-input").value)||null;
+  if(!wt&&!bf) return;
+  wlog=wlog.filter(e=>e.date!==selDate);
+  wlog.push({date:selDate,weight:wt,bf:bf});
+  wlog.sort((a,b)=>a.date.localeCompare(b.date));
+  saveWlog();
+  document.getElementById("wt-input").value="";
+  document.getElementById("bf-input").value="";
+  renderProgress(); renderHeader();
+}
+
+function exportData(){
+  const exp={habits:data,bodyComposition:wlog,exportedAt:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(exp,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url; a.download="fat-loss-data-"+dateKey()+".json";
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// ── BOTTOM BAR ────────────────────────────────────────────────────────────────
+function renderBottomBar(){
+  const done=doneCount(selDate), sl=getDay(selDate).sleepHrs;
+  const wk=weekKeys(), z2=wk.reduce((s,k)=>s+(getDay(k).zone2Min||0),0);
+  const bft=wk.filter(k=>getHabits(k).bft_strength).length;
+  document.getElementById("bottom-left").innerHTML=
+    `${done}/${TOTAL} habits · ${z2}min Zone2${sl?` · 💤${sl}h`:""}`;
+  document.getElementById("bottom-right").textContent=`${bft}/3 BFT`;
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+function setView(v){
+  curView=v;
+  document.querySelectorAll(".view").forEach(el=>el.classList.remove("on"));
+  document.querySelectorAll(".tab").forEach(el=>el.classList.remove("on"));
+  document.getElementById("view-"+v).classList.add("on");
+  document.querySelectorAll(".tab").forEach(el=>{
+    if(el.textContent.toLowerCase().startsWith(v==="today"?"today":v==="week"?"this":"pro"))
+      el.classList.add("on");
+  });
+  if(v==="week") renderWeekView();
+  if(v==="progress") renderProgress();
+}
+
+function selectDate(k){
+  selDate=k;
+  render();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
