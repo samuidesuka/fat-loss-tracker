@@ -135,9 +135,10 @@ textarea{width:100%;min-height:80px;background:#14141C;border:1px solid #1E1E2E;
           <div style="font-size:13px;color:#888">Logged today</div>
           <div><span id="z2-today" style="font-size:28px;font-weight:300;font-family:'DM Mono',monospace;color:#3B82F6">0</span><span style="font-size:14px;color:#555">min</span></div>
         </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <input class="numinput" id="z2-input" type="number" placeholder="min" min="1" max="180"/>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input class="numinput" id="z2-input" type="number" placeholder="min" min="0" max="180"/>
           <button class="btn" onclick="addZ2()">Add</button>
+          <button onclick="setZ2()" style="background:none;border:1px solid #333;border-radius:8px;color:#888;font-size:12px;padding:8px 12px;cursor:pointer;">Set</button>
         </div>
       </div>
       <div style="font-size:11px;color:#555;margin-bottom:6px">
@@ -382,10 +383,13 @@ function toggleHabit(id, row){
 function renderSleep(){
   const sl=getDay(selDate).sleepHrs;
   const col=!sl?"#444":sl>=7.5?"#10B981":sl>=6?"#F59E0B":"#EF4444";
-  const label=!sl?"Not logged yet":sl>=7.5?"✓ Good":sl>=6?"⚠ Short":"⚠ Low";
+  const label=!sl?"":sl>=7.5?"✓ Good":sl>=6?"⚠ Short":"⚠ Low";
   document.getElementById("sleep-display").innerHTML=sl
-    ?`<span style="font-size:30px;font-weight:300;font-family:'DM Mono',monospace;color:${col}">${sl}</span><span style="font-size:14px;color:#555"> hrs</span> <span style="font-size:12px;color:${col};margin-left:6px">${label}</span>`
+    ?`<span style="font-size:30px;font-weight:300;font-family:'DM Mono',monospace;color:${col}">${sl}</span><span style="font-size:14px;color:#555"> hrs</span> <span style="font-size:12px;color:${col};margin-left:6px">${label}</span> <button onclick="clearSleep()" style="margin-left:10px;background:none;border:1px solid #333;border-radius:6px;color:#666;font-size:11px;padding:3px 8px;cursor:pointer;">Edit</button>`
     :`<span style="color:#444">Not logged yet</span>`;
+  // pre-fill input with current value so user can see and edit it
+  const inp=document.getElementById("sleep-input");
+  if(sl) inp.value=sl;
   const quick=[6,6.5,7,7.5,8,8.5];
   document.getElementById("sleep-quick").innerHTML=quick.map(h=>
     `<button class="btn-sm ${sl===h?"on":""}" onclick="quickSleep(${h})">${h}h</button>`
@@ -407,6 +411,13 @@ function quickSleep(h){
   renderSleep(); renderWeekView(); renderBottomBar();
 }
 
+function clearSleep(){
+  delete getDay(selDate).sleepHrs;
+  saveData();
+  document.getElementById("sleep-input").value="";
+  renderSleep(); renderWeekView(); renderBottomBar();
+}
+
 // ── ZONE 2 ───────────────────────────────────────────────────────────────────
 function renderZ2Today(){
   const d=getDay(selDate), z2=d.zone2Min||0;
@@ -421,6 +432,15 @@ function addZ2(){
   if(!m||m<=0) return;
   const d=getDay(selDate);
   d.zone2Min=(d.zone2Min||0)+m;
+  saveData();
+  document.getElementById("z2-input").value="";
+  renderZ2Today(); renderWeekView();
+}
+
+function setZ2(){
+  const m=parseInt(document.getElementById("z2-input").value);
+  if(isNaN(m)||m<0) return;
+  getDay(selDate).zone2Min=m;
   saveData();
   document.getElementById("z2-input").value="";
   renderZ2Today(); renderWeekView();
@@ -513,11 +533,13 @@ function renderProgress(){
         </svg>
         <div style="padding:0 16px 12px">
           ${[...wlog].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8).map((e,i)=>`
-          <div class="prog-row">
+          <div class="prog-row" style="align-items:center">
             <span style="color:#666">${new Date(e.date+"T12:00:00").toLocaleDateString("en-SG",{day:"numeric",month:"short"})}</span>
-            <span style="font-family:'DM Mono',monospace">
-              ${e.weight?`<span style="color:#888;margin-right:12px">${e.weight}kg</span>`:""}
+            <span style="font-family:'DM Mono',monospace;display:flex;align-items:center;gap:8px">
+              ${e.weight?`<span style="color:#888">${e.weight}kg</span>`:""}
               ${e.bf?`<span style="color:${e.bf<=23?"#10B981":"#F59E0B"}">${e.bf}%</span>`:""}
+              <button onclick="editBodyComp('${e.date}')" style="background:none;border:1px solid #2A2A3A;border-radius:5px;color:#666;font-size:10px;padding:2px 7px;cursor:pointer;">Edit</button>
+              <button onclick="deleteBodyComp('${e.date}')" style="background:none;border:1px solid #3A1A1A;border-radius:5px;color:#664444;font-size:10px;padding:2px 7px;cursor:pointer;">✕</button>
             </span>
           </div>`).join("")}
         </div>
@@ -552,6 +574,23 @@ function saveBodyComp(){
   document.getElementById("wt-input").value="";
   document.getElementById("bf-input").value="";
   renderProgress(); renderHeader();
+}
+
+function deleteBodyComp(date){
+  if(!confirm("Delete entry for "+date+"?")) return;
+  wlog=wlog.filter(e=>e.date!==date);
+  saveWlog();
+  renderProgress(); renderHeader();
+}
+
+function editBodyComp(date){
+  // pre-fill inputs with existing values so user can correct
+  const entry=wlog.find(e=>e.date===date);
+  if(!entry) return;
+  if(entry.weight) document.getElementById("wt-input").value=entry.weight;
+  if(entry.bf) document.getElementById("bf-input").value=entry.bf;
+  // scroll to top of progress view
+  document.getElementById("view-progress").scrollTop=0;
 }
 
 function exportData(){
